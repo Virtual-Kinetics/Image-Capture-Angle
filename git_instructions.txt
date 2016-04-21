@@ -1,0 +1,9 @@
+Hello, this is a test for the repository. 
+
+If you want to add changes to the repository from the terminal, follow these steps:
+
+1. git add .
+2. git commit -m "PLACE A COMMENT ABOUT THE CHANGE YOU MADE"
+3. git push
+
+On the GitHub app, just make your changes on whatever platform you want and then go to "Uncommited Changes" in the app to add your comment and push
