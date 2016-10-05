@@ -21,7 +21,7 @@ class LinearRegression
         edges = e
     }
     
-    func processImage(pixels: [[[CGFloat]]]) -> [[UIColor]]
+    func processImage(_ pixels: [[[CGFloat]]]) -> [[UIColor]]
     {
         var processedItems: [[UIColor]] = []
         for _ in 1...Int(pixels.count)
@@ -29,7 +29,7 @@ class LinearRegression
             var processedLine: [UIColor] = []
             for _ in 1...Int(pixels[0].count)
             {
-                processedLine.append(UIColor.whiteColor())
+                processedLine.append(UIColor.white)
             }
             processedItems.append(processedLine)
         }
@@ -38,7 +38,7 @@ class LinearRegression
             //var processedLine: [UIColor] = []
             for w in 1...Int(pixels[0].count)-2
             {
-                if processedItems[h][w] == UIColor.blackColor()
+                if processedItems[h][w] == UIColor.black
                 {
                     continue
                 }
@@ -72,8 +72,8 @@ class LinearRegression
                         let distance = Double(pow(pow(r1-r2,2)+pow(g1-g2,2)+pow(b1-b2,2),0.5))
                         if  distance > cutoff && (neighbor != [1.0, 1.0, 1.0] || neighbor != [0.0, 0.0, 0.0])
                         {
-                            processedItems[h][w] = UIColor.blackColor()
-                            processedItems[h+a][w+b] = UIColor.blackColor()
+                            processedItems[h][w] = UIColor.black
+                            processedItems[h+a][w+b] = UIColor.black
                             //processedLine.append(UIColor.blackColor())
                             pixelProcessed = true
                         }
@@ -99,7 +99,7 @@ class LinearRegression
         return processedItems
     }
     
-    func regressionData(BWImage: [[UIColor]]) -> [[CGPoint]]
+    func regressionData(_ BWImage: [[UIColor]]) -> [[CGPoint]]
     {
         var output1: [CGPoint] = []
         var output2: [CGPoint] = []
@@ -113,18 +113,18 @@ class LinearRegression
                 let previousXColor = BWImage[y][x-1]
                 let futureXColor = BWImage[y][x+1]
                 let currentColor = BWImage[y][x]
-                if currentColor == UIColor.whiteColor()
+                if currentColor == UIColor.white
                 {
                     continue
                 }
-                if(output1X == nil && currentColor == UIColor.blackColor() && previousXColor != UIColor.blackColor())
+                if(output1X == nil && currentColor == UIColor.black && previousXColor != UIColor.black)
                 {
                     output1X = x
                     output1Y = y
                 }
-                else if(output1X != nil && output1Y == y && currentColor == UIColor.blackColor() && previousXColor != UIColor.blackColor())
+                else if(output1X != nil && output1Y == y && currentColor == UIColor.black && previousXColor != UIColor.black)
                 {
-                    output1.append(CGPointMake(round(CGFloat(output1X! + x)/2), CGFloat(output1Y!)))
+                    output1.append(CGPoint(x: round(CGFloat(output1X! + x)/2), y: CGFloat(output1Y!)))
                     output1X = x
                     output1Y = y
                     //output1X = nil
@@ -142,18 +142,18 @@ class LinearRegression
                 let previousYColor = BWImage[y-1][x]
                 let futureYColor = BWImage[y+1][x]
                 let currentColor = BWImage[y][x]
-                if currentColor == UIColor.whiteColor()
+                if currentColor == UIColor.white
                 {
                     continue
                 }
-                if(output2Y == nil && currentColor == UIColor.blackColor() && previousYColor != UIColor.blackColor())
+                if(output2Y == nil && currentColor == UIColor.black && previousYColor != UIColor.black)
                 {
                     output2Y = y
                     output2X = x
                 }
-                else if(output2Y != nil && output2X == x && currentColor == UIColor.blackColor() && previousYColor != UIColor.blackColor())
+                else if(output2Y != nil && output2X == x && currentColor == UIColor.black && previousYColor != UIColor.black)
                 {
-                    output2.append(CGPointMake(CGFloat(output2X!), round(CGFloat(output2Y! + y)/2)))
+                    output2.append(CGPoint(x: CGFloat(output2X!), y: round(CGFloat(output2Y! + y)/2)))
                     output2X = x
                     output2Y = y
                     //output2X = nil
@@ -168,7 +168,7 @@ class LinearRegression
     
     
     
-    func longLine(output1:[CGPoint])->[CGPoint]
+    func longLine(_ output1:[CGPoint])->[CGPoint]
     {
         var longRed: [[CGPoint]] = []
         var maxlen=0
@@ -184,7 +184,7 @@ class LinearRegression
             {
                 for b in [-1, 0, 1]
                 {
-                    let point = CGPointMake(currentPoint.x+CGFloat(a),currentPoint.y+CGFloat(b))
+                    let point = CGPoint(x: currentPoint.x+CGFloat(a),y: currentPoint.y+CGFloat(b))
                     
                     if output1.contains(point)
                     {
@@ -229,7 +229,7 @@ class LinearRegression
     
     
     
-    func invert(matrix : [Double]) -> [Double] {
+    func invert(_ matrix : [Double]) -> [Double] {
         
         var inMatrix = matrix
         
@@ -252,7 +252,7 @@ class LinearRegression
      Calculate theta values using the normal equations.
      - returns: Double array with theta coefficients
      */
-    func normalEquations(Data:[CGPoint]) -> [Double]
+    func normalEquations(_ Data:[CGPoint]) -> [Double]
     {
         //𝜃 = inverse(X' * X) * X' * y
         var x: [Double] = []
@@ -263,18 +263,18 @@ class LinearRegression
             x.append(1.0)
             y.append(Double(Data[v].y))
         }
-        var mtresult = [Double](count : x.count, repeatedValue : 0.0)
+        var mtresult = [Double](repeating: 0.0, count: x.count)
         vDSP_mtransD(x, 1, &mtresult, 1, 2, UInt(Data.count))
         
-        var mresult = [Double](count : 4, repeatedValue : 0.0)
+        var mresult = [Double](repeating: 0.0, count: 4)
         vDSP_mmulD(mtresult, 1, x, 1, &mresult, 1, 2, 2, UInt(Data.count))
         
         let inverse = invert(mresult)
         
-        var doubleOG = [Double](count : 2*Data.count, repeatedValue : 0.0)
+        var doubleOG = [Double](repeating: 0.0, count: 2*Data.count)
         vDSP_mmulD(inverse, 1, mtresult, 1, &doubleOG, 1, 2, UInt(Data.count),2)
         
-        var VK4lyfe = [Double](count : 2, repeatedValue : 0.0)
+        var VK4lyfe = [Double](repeating: 0.0, count: 2)
         vDSP_mmulD(doubleOG, 1, y, 1, &VK4lyfe, 1, 2, 1, UInt(Data.count))
         return VK4lyfe
     }

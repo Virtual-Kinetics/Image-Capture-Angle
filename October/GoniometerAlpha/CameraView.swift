@@ -19,7 +19,7 @@ class CameraView: UIView
     
     // Only override drawRect: if you perform custom drawing.
     // An empty implementation adversely affects performance during animation.
-    override func drawRect(rect: CGRect)
+    override func draw(_ rect: CGRect)
     {
         captureSession.sessionPreset = AVCaptureSessionPresetHigh
         
@@ -27,13 +27,13 @@ class CameraView: UIView
         let devices = AVCaptureDevice.devices()
         
         // Loop through all the capture devices on this phone
-        for device in devices
+        for device in devices!
         {
             // Make sure this particular device supports video
-            if (device.hasMediaType(AVMediaTypeVideo))
+            if ((device as AnyObject).hasMediaType(AVMediaTypeVideo))
             {
                 // Finally check the position and confirm we've got the back camera
-                if(device.position == AVCaptureDevicePosition.Back)
+                if((device as AnyObject).position == AVCaptureDevicePosition.back)
                 {
                     captureDevice = device as? AVCaptureDevice
                     if captureDevice != nil
@@ -78,6 +78,9 @@ class CameraView: UIView
     
     func resumeSession()
     {
+        if captureDevice != nil
+        {
         captureSession.startRunning()
+        }
     }
 }

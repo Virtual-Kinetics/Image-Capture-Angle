@@ -16,40 +16,40 @@ class TableViewController: UIViewController, UITableViewDataSource, UITableViewD
     @IBOutlet var tableView: UITableView!
     var angle = 0.0
     
-    func numberOfSectionsInTableView(tableView: UITableView) -> Int
+    func numberOfSections(in tableView: UITableView) -> Int
     {
         return 1
     }
     
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int
     {
         return 4
     }
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell
     {
         
-        if indexPath.row == 0
+        if (indexPath as NSIndexPath).row == 0
         {
-            let cell = tableView.dequeueReusableCellWithIdentifier("NameCell") as! DescriptionCell
+            let cell = tableView.dequeueReusableCell(withIdentifier: "NameCell") as! DescriptionCell
             cell.configure("", placeholder: "First Name")
             return cell
         }
-        else if indexPath.row == 1
+        else if (indexPath as NSIndexPath).row == 1
         {
-            let cell = tableView.dequeueReusableCellWithIdentifier("LastNameCell") as! DescriptionCell
+            let cell = tableView.dequeueReusableCell(withIdentifier: "LastNameCell") as! DescriptionCell
             cell.configure("", placeholder: "Last Name")
             return cell
         }
-        else if indexPath.row == 2
+        else if (indexPath as NSIndexPath).row == 2
         {
-            let cell = tableView.dequeueReusableCellWithIdentifier("AngleCell") as! DescriptionCell
+            let cell = tableView.dequeueReusableCell(withIdentifier: "AngleCell") as! DescriptionCell
             cell.configure(String(angle), placeholder: String(angle))
             return cell
         }
         else
         {
-            let cell = tableView.dequeueReusableCellWithIdentifier("DescriptionCell") as! DescriptionCell
+            let cell = tableView.dequeueReusableCell(withIdentifier: "DescriptionCell") as! DescriptionCell
             cell.configure("", placeholder: "Description")
             return cell
         }
@@ -57,22 +57,22 @@ class TableViewController: UIViewController, UITableViewDataSource, UITableViewD
     
     @IBAction func storeData()
     {
-        let cell = tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 0, inSection: 0)) as! DescriptionCell
-        let lastCell = tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 1, inSection: 0)) as! DescriptionCell
-        let angleCell = tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 2, inSection: 0)) as! DescriptionCell
-        let descriptionCell = tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 3, inSection: 0)) as! DescriptionCell
-        let today = NSDate()
+        let cell = tableView.cellForRow(at: IndexPath(row: 0, section: 0)) as! DescriptionCell
+        let lastCell = tableView.cellForRow(at: IndexPath(row: 1, section: 0)) as! DescriptionCell
+        let angleCell = tableView.cellForRow(at: IndexPath(row: 2, section: 0)) as! DescriptionCell
+        let descriptionCell = tableView.cellForRow(at: IndexPath(row: 3, section: 0)) as! DescriptionCell
+        let today = Date()
         var unwrapped = cell.field.text! + ", " + lastCell.field.text! + ", "
-        unwrapped = unwrapped + angleCell.field.text! + ", " + String(today)
+        unwrapped = unwrapped + angleCell.field.text! + ", " + String(describing: today)
         unwrapped = unwrapped + ", " + descriptionCell.field.text! + ", "
         
-        let paths = NSFileManager.defaultManager().URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask)
-        let path = paths[0].URLByAppendingPathComponent("goniometerDataAugust2.csv")
+        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        let path = paths[0].appendingPathComponent("goniometerDataAugust2.csv")
         
         var text2: String = ""
         do
         {
-            text2 = try String(contentsOfURL: path, encoding: NSUTF8StringEncoding)
+            text2 = try String(contentsOf: path, encoding: String.Encoding.utf8)
         }
         catch let error as NSError {
             print("Error: \(error)")
@@ -82,10 +82,10 @@ class TableViewController: UIViewController, UITableViewDataSource, UITableViewD
         //writing
         do
         {
-            try unwrapped.writeToURL(path, atomically: false, encoding: NSUTF8StringEncoding)
-            let alert = UIAlertController(title: "Goniometer Alpha", message: "Data Stored!", preferredStyle: UIAlertControllerStyle.Alert)
-            alert.addAction(UIAlertAction(title: "Okay", style: UIAlertActionStyle.Default, handler: nil))
-            self.presentViewController(alert, animated: true, completion: nil)
+            try unwrapped.write(to: path, atomically: false, encoding: String.Encoding.utf8)
+            let alert = UIAlertController(title: "Goniometer Alpha", message: "Data Stored!", preferredStyle: UIAlertControllerStyle.alert)
+            alert.addAction(UIAlertAction(title: "Okay", style: UIAlertActionStyle.default, handler: nil))
+            self.present(alert, animated: true, completion: nil)
         }
         catch {print("Noooo")}
         
@@ -107,10 +107,10 @@ class TableViewController: UIViewController, UITableViewDataSource, UITableViewD
     }
     */
     
-    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?)
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?)
     {
         view.endEditing(true)
-        super.touchesBegan(touches, withEvent: event)
+        super.touchesBegan(touches, with: event)
     }
 
 }

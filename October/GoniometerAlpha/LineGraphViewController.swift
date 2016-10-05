@@ -24,13 +24,13 @@ class LineGraphViewController: UIViewController
     
     var fullData: [String] = []
     var descriptionPicked: String?
-    var beginDate: NSDate?
-    var endDate: NSDate?
+    var beginDate: Date?
+    var endDate: Date?
     var firstName: String?
     var lastName: String?
     
     var angleList: [Double] = []
-    var timeList: [NSDate] = []
+    var timeList: [Date] = []
     var descriptionList = ["Area"]
     
     override func viewDidLoad()
@@ -61,9 +61,9 @@ class LineGraphViewController: UIViewController
             {
                 if((fullData[entry] == firstName! || firstName! == "") && (fullData[entry+1] == lastName! || lastName! == ""))
                 {
-                    let dateFormatter = NSDateFormatter()
+                    let dateFormatter = DateFormatter()
                     dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss ZZZZ"
-                    let nowDate = dateFormatter.dateFromString(fullData[entry+3])
+                    let nowDate = dateFormatter.date(from: fullData[entry+3])
                     var isInRange = true
                     
                     if descriptionPicked != nil
@@ -75,14 +75,14 @@ class LineGraphViewController: UIViewController
                     }
                     if beginDate != nil
                     {
-                        if beginDate!.timeIntervalSinceDate(nowDate!) > 0
+                        if beginDate!.timeIntervalSince(nowDate!) > 0
                         {
                             isInRange = false
                         }
                     }
                     if endDate != nil
                     {
-                        if endDate!.timeIntervalSinceDate(nowDate!) < 0
+                        if endDate!.timeIntervalSince(nowDate!) < 0
                         {
                             isInRange = false
                         }
@@ -98,11 +98,11 @@ class LineGraphViewController: UIViewController
             }
             if angleList.count < 2
             {
-                let alert = UIAlertController(title: "Goniometer Alpha", message: "More than one data point is required to graph", preferredStyle: UIAlertControllerStyle.Alert)
-                alert.addAction(UIAlertAction(title: "Okay", style: UIAlertActionStyle.Default, handler: nil))
-                self.presentViewController(alert, animated: true, completion: nil)
+                let alert = UIAlertController(title: "Goniometer Alpha", message: "More than one data point is required to graph", preferredStyle: UIAlertControllerStyle.alert)
+                alert.addAction(UIAlertAction(title: "Okay", style: UIAlertActionStyle.default, handler: nil))
+                self.present(alert, animated: true, completion: nil)
                 angleList = graphView.graphPoints
-                timeList = graphView.timePoints
+                timeList = graphView.timePoints as [Date]
             }
             else
             {
@@ -127,9 +127,9 @@ class LineGraphViewController: UIViewController
         {
             beginDayString = "0" + beginDayString
         }
-        let dateFormatter = NSDateFormatter()
+        let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss ZZZZ"
-        beginDate = dateFormatter.dateFromString(beginYearString+"-"+beginMonthString+"-"+beginDayString+" 00:00:00 +0000")
+        beginDate = dateFormatter.date(from: beginYearString+"-"+beginMonthString+"-"+beginDayString+" 00:00:00 +0000")
         
         let endYearString = endYear.text!
         var endMonthString = endMonth.text!
@@ -142,7 +142,7 @@ class LineGraphViewController: UIViewController
         {
             endDayString = "0" + endDayString
         }
-        endDate = dateFormatter.dateFromString(endYearString+"-"+endMonthString+"-"+endDayString+" 23:59:59 +0000")
+        endDate = dateFormatter.date(from: endYearString+"-"+endMonthString+"-"+endDayString+" 23:59:59 +0000")
         search()
         //dataCellView.reloadData()
         //TODO: Adjust reloadData() to include begin and end dates
@@ -150,7 +150,7 @@ class LineGraphViewController: UIViewController
     
     @IBAction func displayOptions()
     {
-        let alertController = UIAlertController(title: "Select an Area to Narrow the Search", message: "", preferredStyle: .Alert)
+        let alertController = UIAlertController(title: "Select an Area to Narrow the Search", message: "", preferredStyle: .alert)
         
         var displayList: [String] = []
         if descriptionList.count > 1
@@ -160,7 +160,7 @@ class LineGraphViewController: UIViewController
                 if !displayList.contains(descriptionList[i])
                 {
                     displayList.append(descriptionList[i])
-                    let action = UIAlertAction(title: descriptionList[i], style: .Default)
+                    let action = UIAlertAction(title: descriptionList[i], style: .default)
                     { (_) in
                         self.descriptionPicked = self.descriptionList[i]
                         self.search()
@@ -170,10 +170,10 @@ class LineGraphViewController: UIViewController
             }
         }
         
-        let cancelAction = UIAlertAction(title: "Cancel", style: .Cancel) { (action) in}
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { (action) in}
         alertController.addAction(cancelAction)
         
-        self.presentViewController(alertController, animated: true) {}
+        self.present(alertController, animated: true) {}
         
     }
 

@@ -10,9 +10,9 @@ import UIKit
 
 extension UIImage
 {
-    func getPixelColor(width: Int, height: Int) -> [[[CGFloat]]]
+    func getPixelColor(_ width: Int, height: Int) -> [[[CGFloat]]]
     {
-        let pixelData = CGDataProviderCopyData(CGImageGetDataProvider(self.CGImage))
+        let pixelData = self.cgImage?.dataProvider?.data
         let data: UnsafePointer<UInt8> = CFDataGetBytePtr(pixelData)
         var pixels: [[[CGFloat]]] = []
         for y in 0...height-1
@@ -33,17 +33,17 @@ extension UIImage
         return pixels
     }
     
-    func resizeImage(newWidth: CGFloat) -> UIImage
+    func resizeImage(_ newWidth: CGFloat) -> UIImage
     {
         
         let scale = newWidth / size.width
         let newHeight = size.height * scale
-        UIGraphicsBeginImageContext(CGSizeMake(newWidth, newHeight))
-        drawInRect(CGRectMake(0, 0, newWidth, newHeight))
+        UIGraphicsBeginImageContext(CGSize(width: newWidth, height: newHeight))
+        draw(in: CGRect(x: 0, y: 0, width: newWidth, height: newHeight))
         let newImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         
-        return newImage
+        return newImage!
     }
 }
 
@@ -96,7 +96,7 @@ class ImageController: UIViewController
             //Show the captured image to
             view.addSubview(imageView)
             // send to back so that the buttons and label are visible
-            view.sendSubviewToBack(imageView)
+            view.sendSubview(toBack: imageView)
             //*/
  
  
@@ -231,7 +231,7 @@ class ImageController: UIViewController
         }
     }
     
-    func findAutoDots(y1: [Double], y2: [Double], line1: [CGPoint], line2: [CGPoint])
+    func findAutoDots(_ y1: [Double], y2: [Double], line1: [CGPoint], line2: [CGPoint])
     {
         let xPos = (y2[1]-y1[1])/(y1[0]-y2[0])
         let yPos = y1[0]*xPos+y1[1]
@@ -315,7 +315,7 @@ class ImageController: UIViewController
 //        findAngle()
     }
     
-    func findFarPoint(x: Double, y: Double, points: [CGPoint]) -> CGPoint
+    func findFarPoint(_ x: Double, y: Double, points: [CGPoint]) -> CGPoint
     {
         var output = points[0]
         let d1 = pow(pow(x-Double(points[0].x),2)+pow(y-Double(points[0].y),2),0.5)
@@ -327,7 +327,7 @@ class ImageController: UIViewController
         return output
     }
     
-    func pointInQuad(quadx: Double, quady: Double) -> Int
+    func pointInQuad(_ quadx: Double, quady: Double) -> Int
     {
         if quadx > 0 && quady > 0
         {
@@ -351,11 +351,11 @@ class ImageController: UIViewController
     
     
     //Both linear regression and touchesMoved can place dots and lines
-    func placeDot(x: CGFloat, y: CGFloat)
+    func placeDot(_ x: CGFloat, y: CGFloat)
     {
-        let rect: CGRect = CGRectMake(x-CGFloat(size/2), y-CGFloat(size/2), CGFloat(size), CGFloat(size))
+        let rect: CGRect = CGRect(x: x-CGFloat(size/2), y: y-CGFloat(size/2), width: CGFloat(size), height: CGFloat(size))
         let square = UIView(frame: rect)
-        square.backgroundColor = UIColor.cyanColor()
+        square.backgroundColor = UIColor.cyan
         square.layer.cornerRadius = CGFloat(size/2)
         square.clipsToBounds = true
         view.addSubview(square)
@@ -364,14 +364,14 @@ class ImageController: UIViewController
         rectViews.append(square)
     }
     
-    func placeLine(lineNum: Int = 0, changePos: Bool)
+    func placeLine(_ lineNum: Int = 0, changePos: Bool)
     {
-        let x1 = CGRectGetMidX(points[0+lineNum])
-        let y1 = CGRectGetMidY(points[0+lineNum])
-        let x2 = CGRectGetMidX(points[1+lineNum])
-        let y2 = CGRectGetMidY(points[1+lineNum])
+        let x1 = points[0+lineNum].midX
+        let y1 = points[0+lineNum].midY
+        let x2 = points[1+lineNum].midX
+        let y2 = points[1+lineNum].midY
         let d1 = pow(pow(x1-x2,2)+pow(y1-y2,2),0.5)
-        let line: CGRect = CGRectMake(CGRectGetMidX(points[0]), CGRectGetMidY(points[0]), d1, 5)
+        let line: CGRect = CGRect(x: points[0].midX, y: points[0].midY, width: d1, height: 5)
         var angle = acos((x2-x1)/d1)
         if y1-y2 > 0
         {
@@ -380,17 +380,17 @@ class ImageController: UIViewController
         if(!changePos)
         {
             let lineView = UIView(frame: line)
-            lineView.transform = CGAffineTransformMakeRotation(angle)
-            lineView.backgroundColor = UIColor.cyanColor()
+            lineView.transform = CGAffineTransform(rotationAngle: angle)
+            lineView.backgroundColor = UIColor.cyan
             lineView.center = CGPoint(x: (x1+x2)/2, y: (y1+y2)/2)
             view.addSubview(lineView)
             lineViews.append(lineView)
         }
         else
         {
-            lineViews[0+lineNum].transform = CGAffineTransformIdentity
+            lineViews[0+lineNum].transform = CGAffineTransform.identity
             lineViews[0+lineNum].frame = line
-            lineViews[0+lineNum].transform = CGAffineTransformMakeRotation(angle)
+            lineViews[0+lineNum].transform = CGAffineTransform(rotationAngle: angle)
             lineViews[0+lineNum].center = CGPoint(x: (x1+x2)/2, y: (y1+y2)/2)
         }
     }
@@ -398,42 +398,42 @@ class ImageController: UIViewController
     
     @IBAction func storeData()
     {
-        let alertController = UIAlertController(title: "Enter Patient Information", message: "", preferredStyle: .Alert)
-        alertController.addTextFieldWithConfigurationHandler { (field: UITextField) in
+        let alertController = UIAlertController(title: "Enter Patient Information", message: "", preferredStyle: .alert)
+        alertController.addTextField { (field: UITextField) in
             field.placeholder = "First Name"
         }
-        alertController.addTextFieldWithConfigurationHandler { (field: UITextField) in
+        alertController.addTextField { (field: UITextField) in
             field.placeholder = "Last Name"
         }
-        alertController.addTextFieldWithConfigurationHandler { (field: UITextField) in
+        alertController.addTextField { (field: UITextField) in
             field.placeholder = "Datum Description"
         }
-        let action = UIAlertAction(title: "Store", style: .Default)
+        let action = UIAlertAction(title: "Store", style: .default)
         { (_) in
             self.store(alertController)
         }
         alertController.addAction(action)
         
-        let cancelAction = UIAlertAction(title: "Cancel", style: .Cancel) { (action) in
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { (action) in
         }
         alertController.addAction(cancelAction)
         
-        self.presentViewController(alertController, animated: true) {}
+        self.present(alertController, animated: true) {}
     }
     
-    func store(alert: UIAlertController)
+    func store(_ alert: UIAlertController)
     {
-        let today = NSDate()
+        let today = Date()
         var unwrapped = alert.textFields![0].text! + ", " + alert.textFields![1].text! + ", "
-        unwrapped = unwrapped + String(calcAngle) + ", " + String(today)
+        unwrapped = unwrapped + String(calcAngle) + ", " + String(describing: today)
         unwrapped = unwrapped + ", " + alert.textFields![2].text! + ", "
         
-        let paths = NSFileManager.defaultManager().URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask)
-        let path = paths[0].URLByAppendingPathComponent("goniometerDataAugust2.csv")
+        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        let path = paths[0].appendingPathComponent("goniometerDataAugust2.csv")
         
         var text2: String = ""
         do {
-            text2 = try String(contentsOfURL: path, encoding: NSUTF8StringEncoding)
+            text2 = try String(contentsOf: path, encoding: String.Encoding.utf8)
         }
         catch let error as NSError {
             print("Error: \(error)")
@@ -443,10 +443,10 @@ class ImageController: UIViewController
         //writing
         do
         {
-            try unwrapped.writeToURL(path, atomically: false, encoding: NSUTF8StringEncoding)
-            let alert = UIAlertController(title: "Goniometer Alpha", message: "Data Stored!", preferredStyle: UIAlertControllerStyle.Alert)
-            alert.addAction(UIAlertAction(title: "Okay", style: UIAlertActionStyle.Default, handler: nil))
-            self.presentViewController(alert, animated: true, completion: nil)
+            try unwrapped.write(to: path, atomically: false, encoding: String.Encoding.utf8)
+            let alert = UIAlertController(title: "Goniometer Alpha", message: "Data Stored!", preferredStyle: UIAlertControllerStyle.alert)
+            alert.addAction(UIAlertAction(title: "Okay", style: UIAlertActionStyle.default, handler: nil))
+            self.present(alert, animated: true, completion: nil)
         }
         catch {print("Noooo")}
     }
@@ -455,19 +455,19 @@ class ImageController: UIViewController
     
     
     //How you move dots around screen
-    override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?)
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?)
     {
-        super.touchesMoved(touches, withEvent:event)
+        super.touchesMoved(touches, with:event)
         if let touch = touches.first
         {
-            let oldTouchLocation = touch.previousLocationInView(view)
-            let newTouchLocation = touch.locationInView(view)
+            let oldTouchLocation = touch.previousLocation(in: view)
+            let newTouchLocation = touch.location(in: view)
             if currentRect != nil
             {
-                if CGRectContainsPoint(points[currentRect!], CGPointMake(oldTouchLocation.x, oldTouchLocation.y))
+                if points[currentRect!].contains(CGPoint(x: oldTouchLocation.x, y: oldTouchLocation.y))
                 {
                     //change the frame of the current rectangle as a way to move it across the screen
-                    let rect: CGRect = CGRectMake(newTouchLocation.x-10, newTouchLocation.y-10, 20, 20)
+                    let rect: CGRect = CGRect(x: newTouchLocation.x-10, y: newTouchLocation.y-10, width: 20, height: 20)
                     rectViews[currentRect!].frame = rect
                     points[currentRect!] = rect
                     if currentRect == 0 || currentRect == 1
@@ -484,9 +484,9 @@ class ImageController: UIViewController
         }
     }
     
-    override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?)
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?)
     {
-        super.touchesBegan(touches, withEvent:event)
+        super.touchesBegan(touches, with:event)
         if touches.first != nil
         {
             currentRect = nil
@@ -495,14 +495,14 @@ class ImageController: UIViewController
     
     
     //Setting the 3 points
-    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?)
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?)
     {
         if isLoaded
         {
-            super.touchesBegan(touches, withEvent:event)
+            super.touchesBegan(touches, with:event)
             if let touch = touches.first
             {
-                    let touchLocation = touch.locationInView(view)
+                    let touchLocation = touch.location(in: view)
                     if points.count < 3
                     {
                         // Rectangles used to define the points of the angle to measure
@@ -521,7 +521,7 @@ class ImageController: UIViewController
                 {
                     for index in 0...points.count-1
                     {
-                        if CGRectContainsPoint(points[index], CGPointMake(touchLocation.x, touchLocation.y))
+                        if points[index].contains(CGPoint(x: touchLocation.x, y: touchLocation.y))
                         {
                             currentRect = index
                             break;
@@ -538,27 +538,27 @@ class ImageController: UIViewController
     func findAngle()
     {
         // Use the Law of Cosines to find the angle
-        let x1 = CGRectGetMidX(points[0])
-        let y1 = CGRectGetMidY(points[0])
-        let x2 = CGRectGetMidX(points[1])
-        let y2 = CGRectGetMidY(points[1])
-        let x3 = CGRectGetMidX(points[2])
-        let y3 = CGRectGetMidY(points[2])
+        let x1 = points[0].midX
+        let y1 = points[0].midY
+        let x2 = points[1].midX
+        let y2 = points[1].midY
+        let x3 = points[2].midX
+        let y3 = points[2].midY
         
         let d1 = pow(pow(x1-x2,2)+pow(y1-y2,2),0.5)
         let d2 = pow(pow(x2-x3,2)+pow(y2-y3,2),0.5)
         let d3 = pow(pow(x3-x1,2)+pow(y3-y1,2),0.5)
         
         calcAngle = Double(round(acos((pow(d1,2)+pow(d2,2)-pow(d3,2))/(2*d1*d2))*180/3.14159*10)/10)
-        storeDataButton.setTitle("\(calcAngle)", forState: UIControlState.Normal)
+        storeDataButton.setTitle("\(calcAngle)", for: UIControlState())
     }
     
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?)
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?)
     {
         
         if segue.identifier == "StoreValue"
         {
-            let destViewController: TableViewController = segue.destinationViewController as! TableViewController
+            let destViewController: TableViewController = segue.destination as! TableViewController
             destViewController.angle = calcAngle
             
         }

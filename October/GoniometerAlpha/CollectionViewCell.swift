@@ -12,11 +12,11 @@ class CollectionViewCell: UICollectionViewCell
 {
     @IBOutlet weak var field: UITextView!
     
-    func configure(text: String?, placeholder: String)
+    func configure(_ text: String?, placeholder: String)
     {
         field.text = text
         field.accessibilityValue = text
-        field.textAlignment = .Center
+        field.textAlignment = .center
     }
     
 }

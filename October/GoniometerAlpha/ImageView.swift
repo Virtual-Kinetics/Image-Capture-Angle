@@ -13,7 +13,7 @@ class ImageView: UIView {
     var image: UIImage?
     var view: UIImageView?
     
-    override func drawRect(rect: CGRect)
+    override func draw(_ rect: CGRect)
     {
         if image != nil
         {
@@ -25,7 +25,7 @@ class ImageView: UIView {
             let screenSize: CGRect = frame
             view!.frame = CGRect(x:0, y:0, width:screenSize.width, height:screenSize.height)
             addSubview(view!)
-            sendSubviewToBack(view!)
+            sendSubview(toBack: view!)
         }
     }
 }

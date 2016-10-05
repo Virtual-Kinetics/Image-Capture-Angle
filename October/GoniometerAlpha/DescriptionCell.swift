@@ -13,9 +13,9 @@ class DescriptionCell: UITableViewCell
 
     @IBOutlet weak var field: UITextField!
     
-    func configure(text: String?, placeholder: String)
+    func configure(_ text: String?, placeholder: String)
     {
-        field.frame = CGRectMake(0,0,50,25)
+        field.frame = CGRect(x: 0,y: 0,width: 50,height: 25)
         field.text = text
         field.placeholder = placeholder
         

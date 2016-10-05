@@ -15,7 +15,7 @@ class DataView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewData
     var numberOfRows = 0
     //var firstNameList: [String] = []
     //var lastNameList: [String] = []
-    var timeList: [NSDate] = []
+    var timeList: [Date] = []
     var descriptionList: [String] = []
     var angleList: [Double] = []
     var descriptionPicked: String?
@@ -29,20 +29,20 @@ class DataView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewData
     }
     */
     
-    func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int
+    func numberOfSections(in collectionView: UICollectionView) -> Int
     {
         return 1
     }
     
-    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int
     {
-        dataCellView.backgroundColor = UIColor.whiteColor()
+        dataCellView.backgroundColor = UIColor.white
         numberOfRows = angleList.count + 1
         //print(numberOfRows)
         return numberOfRows * 3
     }
     
-    func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> CGSize
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize
     {
         let screenSize = dataCellView.frame
         let screenWidth = screenSize.width
@@ -50,25 +50,25 @@ class DataView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewData
         return CGSize(width: screenWidth/3, height: 30)
     }
     
-    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell
     {
         //dataCellView.backgroundColor = UIColor.whiteColor()
-        let cell = collectionView.dequeueReusableCellWithReuseIdentifier("CollectionViewCell", forIndexPath: indexPath) as! CollectionViewCell
-        let i = Int(floor(Double(indexPath.item/3)))-1
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CollectionViewCell", for: indexPath) as! CollectionViewCell
+        let i = Int(floor(Double((indexPath as NSIndexPath).item/3)))-1
         //print(i)
-        if indexPath.item%3 == 0
+        if (indexPath as NSIndexPath).item%3 == 0
         {
             //print("1")
             if i > -1
             {
-                cell.field.text = NSString(string: String(timeList[i])).substringToIndex(10)
+                cell.field.text = NSString(string: String(describing: timeList[i])).substring(to: 10)
             }
             else
             {
                 cell.field.text = "Date"
             }
         }
-        else if indexPath.item%3 == 1
+        else if (indexPath as NSIndexPath).item%3 == 1
         {
             //print("2")
             if descriptionPicked != nil && i > 0 && descriptionPicked != ""
@@ -84,7 +84,7 @@ class DataView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewData
                 cell.field.text = descriptionList[i]
             }
         }
-        else if indexPath.item%3 == 2
+        else if (indexPath as NSIndexPath).item%3 == 2
         {
             //print("3")
             if i == -1
@@ -104,9 +104,9 @@ class DataView: UIView, UICollectionViewDelegateFlowLayout, UICollectionViewData
         }
         */
         
-        cell.field.userInteractionEnabled = false;
-        cell.field.textAlignment = .Center
-        cell.frame = CGRectMake(150*CGFloat(indexPath.item%3)+5, CGFloat(i+1)*50, 150, 50)
+        cell.field.isUserInteractionEnabled = false;
+        cell.field.textAlignment = .center
+        cell.frame = CGRect(x: 150*CGFloat((indexPath as NSIndexPath).item%3)+5, y: CGFloat(i+1)*50, width: 150, height: 50)
         //print(cell)
         return cell
     }

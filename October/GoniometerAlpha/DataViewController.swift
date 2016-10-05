@@ -40,8 +40,8 @@ class DataViewController: UIViewController, UICollectionViewDelegateFlowLayout, 
     @IBOutlet var endYear: UITextField!
     @IBOutlet var filterButton: UIButton!
     
-    var beginDate: NSDate?
-    var endDate: NSDate?
+    var beginDate: Date?
+    var endDate: Date?
     
     
     override func viewDidLoad()
@@ -49,34 +49,34 @@ class DataViewController: UIViewController, UICollectionViewDelegateFlowLayout, 
         super.viewDidLoad()
         dataCellView.dataSource = self;
         dataCellView.delegate = self;
-        let paths = NSFileManager.defaultManager().URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask)
-        let path = paths[0].URLByAppendingPathComponent("goniometerDataAugust2.csv")
+        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        let path = paths[0].appendingPathComponent("goniometerDataAugust2.csv")
         
         do
         {
-            let fileText = try String(contentsOfURL: path, encoding: NSUTF8StringEncoding)
-            fullText = fileText.componentsSeparatedByString(", ")
+            let fileText = try String(contentsOf: path, encoding: String.Encoding.utf8)
+            fullText = fileText.components(separatedBy: ", ")
             
         }
         catch {}
         
-        var textSize = fullText.count
+        let textSize = fullText.count
         var addAt: [Int] = []
         var toAdd: [String] = []
         for i in 0..<textSize
         {
-            if fullText[i].containsString("\n")
+            if fullText[i].contains("\n")
             {
-                let toSplit = fullText[i].componentsSeparatedByString("\n")
+                let toSplit = fullText[i].components(separatedBy: "\n")
                 fullText[i] = toSplit[0]
                 toAdd.append(toSplit[1])
                 addAt.append(i+1)
             }
-            fullText[i] = fullText[i].stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceCharacterSet())
+            fullText[i] = fullText[i].trimmingCharacters(in: CharacterSet.whitespaces)
         }
         for i in 0..<toAdd.count
         {
-            fullText.insert(toAdd[i], atIndex: addAt[i]+i)
+            fullText.insert(toAdd[i], at: addAt[i]+i)
         }
         
         
@@ -93,21 +93,21 @@ class DataViewController: UIViewController, UICollectionViewDelegateFlowLayout, 
         let lastText = lastNameField.text
         if (firstText == nil || firstText == "") && (lastText == nil || lastText == "")
         {
-            let alert = UIAlertController(title: "Goniometer Alpha", message: "A name must be given to search", preferredStyle: UIAlertControllerStyle.Alert)
-            alert.addAction(UIAlertAction(title: "Okay", style: UIAlertActionStyle.Default, handler: nil))
-            self.presentViewController(alert, animated: true, completion: nil)
+            let alert = UIAlertController(title: "Goniometer Alpha", message: "A name must be given to search", preferredStyle: UIAlertControllerStyle.alert)
+            alert.addAction(UIAlertAction(title: "Okay", style: UIAlertActionStyle.default, handler: nil))
+            self.present(alert, animated: true, completion: nil)
         }
         else if(fullText.count > 1)
         {
-            let firstNameSearch = firstText!.lowercaseString.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceCharacterSet())
-            let lastNameSearch = lastText!.lowercaseString.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceCharacterSet())
+            let firstNameSearch = firstText!.lowercased().trimmingCharacters(in: CharacterSet.whitespaces)
+            let lastNameSearch = lastText!.lowercased().trimmingCharacters(in: CharacterSet.whitespaces)
             for entry in 0...fullText.count-4
             {
-                if((fullText[entry].lowercaseString == firstNameSearch || firstNameSearch == "") && (fullText[entry+1].lowercaseString == lastNameSearch || lastNameSearch == ""))
+                if((fullText[entry].lowercased() == firstNameSearch || firstNameSearch == "") && (fullText[entry+1].lowercased() == lastNameSearch || lastNameSearch == ""))
                 {
-                    let dateFormatter = NSDateFormatter()
+                    let dateFormatter = DateFormatter()
                     dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss ZZZZ"
-                    let nowDate = dateFormatter.dateFromString(fullText[entry+3])
+                    let nowDate = dateFormatter.date(from: fullText[entry+3])
                     var isInRange = true
 
                     if descriptionPicked != nil
@@ -119,14 +119,14 @@ class DataViewController: UIViewController, UICollectionViewDelegateFlowLayout, 
                     }
                     if beginDate != nil
                     {
-                        if beginDate!.timeIntervalSinceDate(nowDate!) > 0
+                        if beginDate!.timeIntervalSince(nowDate!) > 0
                         {
                             isInRange = false
                         }
                     }
                     if endDate != nil
                     {
-                        if endDate!.timeIntervalSinceDate(nowDate!) < 0
+                        if endDate!.timeIntervalSince(nowDate!) < 0
                         {
                             isInRange = false
                         }
@@ -168,9 +168,9 @@ class DataViewController: UIViewController, UICollectionViewDelegateFlowLayout, 
         {
             beginDayString = "00"
         }
-        let dateFormatter = NSDateFormatter()
+        let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss ZZZZ"
-        beginDate = dateFormatter.dateFromString(beginYearString+"-"+beginMonthString+"-"+beginDayString+" 00:00:00 +0000")
+        beginDate = dateFormatter.date(from: beginYearString+"-"+beginMonthString+"-"+beginDayString+" 00:00:00 +0000")
         
         let endYearString = endYear.text!
         var endMonthString = endMonth.text!
@@ -191,7 +191,7 @@ class DataViewController: UIViewController, UICollectionViewDelegateFlowLayout, 
         {
             beginMonthString = "31"
         }
-        endDate = dateFormatter.dateFromString(endYearString+"-"+endMonthString+"-"+endDayString+" 23:59:59 +0000")
+        endDate = dateFormatter.date(from: endYearString+"-"+endMonthString+"-"+endDayString+" 23:59:59 +0000")
         search()
         dataCellView.reloadData()
         //TODO: Adjust reloadData() to include begin and end dates
@@ -199,7 +199,7 @@ class DataViewController: UIViewController, UICollectionViewDelegateFlowLayout, 
     
     @IBAction func displayOptions()
     {
-        let alertController = UIAlertController(title: "Select an Area to Narrow the Search", message: "", preferredStyle: .Alert)
+        let alertController = UIAlertController(title: "Select an Area to Narrow the Search", message: "", preferredStyle: .alert)
 
         var displayList: [String] = []
         if descriptionList.count > 1
@@ -209,7 +209,7 @@ class DataViewController: UIViewController, UICollectionViewDelegateFlowLayout, 
                 if !displayList.contains(descriptionList[i])
                 {
                     displayList.append(descriptionList[i])
-                    let action = UIAlertAction(title: descriptionList[i], style: .Default)
+                    let action = UIAlertAction(title: descriptionList[i], style: .default)
                     { (_) in
                         self.descriptionPicked = self.descriptionList[i]
                         self.search()
@@ -219,27 +219,27 @@ class DataViewController: UIViewController, UICollectionViewDelegateFlowLayout, 
             }
         }
         
-        let cancelAction = UIAlertAction(title: "Cancel", style: .Cancel) { (action) in
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { (action) in
         }
         alertController.addAction(cancelAction)
         
-        self.presentViewController(alertController, animated: true) {}
+        self.present(alertController, animated: true) {}
 
     }
     
-    func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int
+    func numberOfSections(in collectionView: UICollectionView) -> Int
     {
         return 1
     }
     
-    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int
     {
         numberOfRows = firstNameList.count
         //print(numberOfRows)
         return numberOfRows * 3
     }
     
-    func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> CGSize
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize
     {
         let screenSize = dataCellView.frame
         
@@ -249,26 +249,26 @@ class DataViewController: UIViewController, UICollectionViewDelegateFlowLayout, 
         
     }
     
-    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell
     {
-        print(indexPath.item)
-        let cell = collectionView.dequeueReusableCellWithReuseIdentifier("CollectionViewCell", forIndexPath: indexPath) as! CollectionViewCell
+        print((indexPath as NSIndexPath).item)
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CollectionViewCell", for: indexPath) as! CollectionViewCell
         
-        let i = Int(floor(Double(indexPath.item/3)))
-        if indexPath.item%3 == 0
+        let i = Int(floor(Double((indexPath as NSIndexPath).item/3)))
+        if (indexPath as NSIndexPath).item%3 == 0
         {
-            if indexPath.item > 2
+            if (indexPath as NSIndexPath).item > 2
             {
-                cell.field.text = (timeList[i] as NSString).substringToIndex(10)
+                cell.field.text = (timeList[i] as NSString).substring(to: 10)
             }
             else
             {
                 cell.field.text = timeList[i]
             }
         }
-        else if indexPath.item%3 == 1
+        else if (indexPath as NSIndexPath).item%3 == 1
         {
-            if descriptionPicked != nil && indexPath.item > 5
+            if descriptionPicked != nil && (indexPath as NSIndexPath).item > 5
             {
                 cell.field.text = descriptionPicked
             }
@@ -277,7 +277,7 @@ class DataViewController: UIViewController, UICollectionViewDelegateFlowLayout, 
                 cell.field.text = descriptionList[i]
             }
         }
-        else if indexPath.item%3 == 2
+        else if (indexPath as NSIndexPath).item%3 == 2
         {
             cell.field.text = angleList[i]
         }
@@ -288,13 +288,13 @@ class DataViewController: UIViewController, UICollectionViewDelegateFlowLayout, 
         }
         */
         
-        cell.field.userInteractionEnabled = false;
-        cell.field.textAlignment = .Center
+        cell.field.isUserInteractionEnabled = false;
+        cell.field.textAlignment = .center
         return cell
     }
     
     
-    override func shouldPerformSegueWithIdentifier(identifier: String?, sender: AnyObject?) -> Bool
+    override func shouldPerformSegue(withIdentifier identifier: String?, sender: Any?) -> Bool
     {
         if identifier != "GraphData"
         {
@@ -302,16 +302,16 @@ class DataViewController: UIViewController, UICollectionViewDelegateFlowLayout, 
         }
         if angleList.count < 3
         {
-            let alert = UIAlertController(title: "Goniometer Alpha", message: "At least 2 data points must be found before graphing", preferredStyle: UIAlertControllerStyle.Alert)
-            alert.addAction(UIAlertAction(title: "Okay", style: UIAlertActionStyle.Default, handler: nil))
-            self.presentViewController(alert, animated: true, completion: nil)
+            let alert = UIAlertController(title: "Goniometer Alpha", message: "At least 2 data points must be found before graphing", preferredStyle: UIAlertControllerStyle.alert)
+            alert.addAction(UIAlertAction(title: "Okay", style: UIAlertActionStyle.default, handler: nil))
+            self.present(alert, animated: true, completion: nil)
             return false
         }
         else if Set(descriptionList).count > 2 && descriptionPicked == nil
         {
-            let alert = UIAlertController(title: "Goniometer Alpha", message: "Only one angle type can be graphed", preferredStyle: UIAlertControllerStyle.Alert)
-            alert.addAction(UIAlertAction(title: "Okay", style: UIAlertActionStyle.Default, handler: nil))
-            self.presentViewController(alert, animated: true, completion: nil)
+            let alert = UIAlertController(title: "Goniometer Alpha", message: "Only one angle type can be graphed", preferredStyle: UIAlertControllerStyle.alert)
+            alert.addAction(UIAlertAction(title: "Okay", style: UIAlertActionStyle.default, handler: nil))
+            self.present(alert, animated: true, completion: nil)
             return false
         }
         else
@@ -321,11 +321,11 @@ class DataViewController: UIViewController, UICollectionViewDelegateFlowLayout, 
        
     }
     
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?)
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?)
     {
         if segue.identifier == "GraphData"
         {
-            let destViewController: LineGraphViewController = segue.destinationViewController as! LineGraphViewController
+            let destViewController: LineGraphViewController = segue.destination as! LineGraphViewController
             destViewController.fullData = fullText
             destViewController.descriptionPicked = descriptionPicked
             destViewController.beginDate = beginDate
@@ -335,10 +335,10 @@ class DataViewController: UIViewController, UICollectionViewDelegateFlowLayout, 
         }
     }
     
-    func adaptivePresentationStyleForPresentationController(controller: UIPresentationController!) -> UIModalPresentationStyle
+    func adaptivePresentationStyleForPresentationController(_ controller: UIPresentationController!) -> UIModalPresentationStyle
     {
         // Return no adaptive presentation style, use default presentation behaviour
-        return .None
+        return .none
     }
     
     
